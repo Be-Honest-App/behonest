@@ -4,11 +4,11 @@ interface ShareCardProps {
 
 export function ShareCard({ text }: ShareCardProps) {
     return (
-        <div className="share-card ">
+        <div className="w-full p-6 rounded-xl text-center bg-fun-grad text-white font-bold text-xl">
             {text}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                <button className="btn" style={{ fontSize: '12px', padding: '6px 10px' }}>Copy Link</button>
-                <button className="btn secondary" style={{ fontSize: '12px', padding: '6px 10px' }}>Download Image</button>
+            <div className="flex gap-2 justify-center mt-4">
+                <button className="btn text-xs px-2.5 py-1.5">Copy Link</button>
+                <button className="btn-secondary text-xs px-2.5 py-1.5">Download Image</button>
             </div>
         </div>
     )

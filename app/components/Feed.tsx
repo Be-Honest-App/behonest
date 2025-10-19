@@ -58,17 +58,15 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
 
     const latestId = useRef(posts?.[0]?._id);
 
-    // ✅ Real-time updates with Pusher
+    // ✅ Real-time updates with Pusher (unchanged)
     useEffect(() => {
         const channel = pusherClient.subscribe('posts-channel');
 
-        // New post broadcast
         channel.bind('new-post', (newPost: PostProps) => {
             mutate((current = []) => [newPost, ...current], { revalidate: false });
             latestId.current = newPost._id;
         });
 
-        // Like update broadcast
         channel.bind('update-like', (updatedPost: PostProps) => {
             mutate(
                 (current = []) =>
@@ -79,7 +77,6 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             );
         });
 
-        // Share update broadcast
         channel.bind('update-share', (updatedPost: PostProps) => {
             mutate(
                 (current = []) =>
@@ -97,17 +94,17 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     }, [mutate]);
 
     return (
-        <div className="card">
+        <div className="bg-card rounded-custom shadow-card border border-glass p-4 max-w-custom mx-auto md:grid md:grid-cols-[360px_1fr_360px] md:gap-4">
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-3">
                 <div>
-                    <h2 className="m-0">Customer Service Stories</h2>
-                    <div className="muted mt-1">Top rants & reviews from around the world.</div>
+                    <h2 className="m-0 text-lg font-bold">Customer Service Stories</h2>
+                    <p className="text-muted text-sm mt-1">Top rants & reviews from around the world.</p>
                 </div>
 
-                <div className="flex gap-2 items-center">
-                    <div className="muted small">Sort</div>
-                    <select className="px-2 py-1 rounded border border-[var(--glass)]">
+                <div className="flex items-center gap-2">
+                    <span className="text-muted text-xs">Sort</span>
+                    <select className="px-2 py-1 rounded border border-glass bg-transparent">
                         <option>Latest</option>
                         <option>Trending</option>
                     </select>
@@ -115,22 +112,21 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             </div>
 
             {/* Feed list */}
-            <div className="feed mt-3">
+            <div className="flex flex-col gap-3">
                 {posts?.length ? (
                     posts.map((post) => (
-                        <div key={post._id} className="post">
+                        <div key={post._id} className="p-3.5 rounded-xl border border-glass bg-gradient-to-b from-white/5 to-transparent">
                             {/* Post header */}
-                            <div className="flex items-center gap-2">
-                                <div className="pill">
-                                    {post.tag}{' '}
-                                    {post.businessName && post.businessName.trim() !== `(${post.businessName})`}
-                                </div>
-                                <div className="muted ml-auto">{formatRelativeTime(post.time)}</div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="px-2 py-1.5 rounded-full bg-black/3 text-xs">
+                                    {post.tag} {post.businessName && post.businessName.trim() !== `(${post.businessName})` ? post.businessName : ''}
+                                </span>
+                                <span className="text-muted text-xs ml-auto">{formatRelativeTime(post.time)}</span>
                             </div>
 
                             {/* Post body */}
-                            <h3 className="my-2">{post.title}</h3>
-                            <div className="muted">{post.content}</div>
+                            <h3 className="my-2 text-base font-semibold">{post.title}</h3>
+                            <p className="text-muted text-sm">{post.content}</p>
 
                             {/* ✅ Modular like/share actions */}
                             <PostActions
@@ -142,7 +138,7 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                         </div>
                     ))
                 ) : (
-                    <div className="muted">No posts yet - be the first to share!</div>
+                    <p className="text-muted text-sm">No posts yet - be the first to share!</p>
                 )}
             </div>
         </div>
