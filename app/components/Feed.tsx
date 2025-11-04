@@ -89,17 +89,15 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
 
     const latestId = useRef(posts?.[0]?._id);
 
-    // ✅ Real-time updates with Pusher
+    // ✅ Real-time updates with Pusher (unchanged)
     useEffect(() => {
         const channel = pusherClient.subscribe('posts-channel');
 
-        // New post broadcast
         channel.bind('new-post', (newPost: PostProps) => {
             mutate((current = []) => [newPost, ...current], { revalidate: false });
             latestId.current = newPost._id;
         });
 
-        // Like update broadcast
         channel.bind('update-like', (updatedPost: PostProps) => {
             mutate(
                 (current = []) =>
@@ -112,7 +110,6 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             );
         });
 
-        // Share update broadcast
         channel.bind('update-share', (updatedPost: PostProps) => {
             mutate(
                 (current = []) =>

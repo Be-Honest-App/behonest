@@ -50,7 +50,7 @@ export function RightCol({ initialTags }: RightColProps) {
                 </span>
             </div>
 
-            <div className="flex flex-col gap-2 mt-2">
+            <div className="flex flex-col gap-2">
                 {tags.map((tag) => (
                     <div
                         key={tag}
