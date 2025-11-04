@@ -1,8 +1,8 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from "next/font/google";
-import './globals.css'
-import { ThemeProvider } from 'next-themes'
-import {Navbar}  from '@/app/components/Navbar';
+import './globals.css';
+import { Navbar } from '@/app/components/Navbar';
+import Footer from './components/Footer';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,18 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased px-2 md:px-20`}>
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="light"
-          enableSystem={false}
-          themes={['light', 'dark']}
-        >
-          <div className="">
-            <Navbar />
-            <main>{children}</main>
-            <footer className="muted">Be Honest • Demo mockup - built for UX testing (will be removed during production). Theme, mobile-first and playful/professional mix applied.</footer>
-          </div>
-        </ThemeProvider>
+        <div className="">
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   )

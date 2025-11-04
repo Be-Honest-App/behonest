@@ -24,8 +24,8 @@ interface RightColProps {
 export function RightCol({ initialTags }: RightColProps) {
     const { data: apiData } = useSWR<ApiResponse>('/api/posts', {
         fallbackData: { data: [] },
-        revalidateOnFocus: false, // 🚫 No re-fetch on focus
-        refreshInterval: 0, // 🚫 No polling
+        revalidateOnFocus: false,
+        refreshInterval: 0,
     });
 
     const posts = apiData?.data ?? [];
@@ -41,28 +41,35 @@ export function RightCol({ initialTags }: RightColProps) {
     const tags = computedTags.length > 0 ? computedTags : initialTags;
 
     return (
-        <div className="card" style={{ minWidth: '260px' }}>
-            <div className="flex justify-between items-center">
-                <strong>Trending Tags</strong>
-                <div className="muted small">#customerstories</div>
+        <div className="bg-white rounded-2xl shadow-md p-5">
+            {/* Trending Tags */}
+            <div className="flex justify-between items-center mb-3">
+                <strong className="text-gray-800 text-lg">Trending Tags</strong>
+                <span className="text-orange-500 text-sm font-medium">
+                    #customerstories
+                </span>
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
                 {tags.map((tag) => (
-                    <div key={tag} className="pill">
+                    <div
+                        key={tag}
+                        className="text-sm text-gray-700 hover:text-orange-600 cursor-pointer transition"
+                    >
                         #{tag}
                     </div>
                 ))}
             </div>
 
-            <hr className="my-3 border-t border-[var(--glass)]" />
+            <hr className="my-5 border-t border-gray-100" />
 
+            {/* Why Be Honest section */}
             <div>
-                <strong>Why Be Honest?</strong>
-                <div className="muted mt-2">
+                <strong className="text-gray-800 text-lg">Why Be Honest?</strong>
+                <p className="text-sm text-gray-600 mt-2 leading-relaxed">
                     Focused on customer service stories first - but supports personal
                     anonymous links too.
-                </div>
+                </p>
             </div>
         </div>
     );

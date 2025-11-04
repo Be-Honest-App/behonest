@@ -1,93 +1,101 @@
+// components/PostActions.tsx (updated with Lucide React icons)
+// First, install: npm i lucide-react
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Heart, Share2 } from 'lucide-react'; // Import icons
 
 interface PostActionsProps {
     postId: string;
     likes: number;
     shares: number;
-    likedBy?: string[];
+    likedBy: string[]; // For like toggle (expand if auth needed)
 }
 
-export default function PostActions({ postId, likes, shares }: PostActionsProps) {
-    const [likeCount, setLikeCount] = useState(likes);
-    const [shareCount, setShareCount] = useState(shares);
-    const [hasLiked, setHasLiked] = useState(false);
+export default function PostActions({ postId, likes, shares, likedBy }: PostActionsProps) {
+    const [localLikes, setLocalLikes] = useState(likes);
+    const [localShares, setLocalShares] = useState(shares);
+    const [isLiked, setIsLiked] = useState(likedBy.includes('user-id-placeholder')); // Replace with real user ID
 
-    // Each user has a local ID so they can only like once (simulate user session)
-    useEffect(() => {
-        const storedLikes = JSON.parse(localStorage.getItem('likedPosts') || '[]') as string[];
-        if (storedLikes.includes(postId)) {
-            setHasLiked(true);
-        }
-    }, [postId]);
-
-    // ✅ Toggle like (optimistic UI + backend sync)
     const handleLike = async () => {
-        const storedLikes = JSON.parse(localStorage.getItem('likedPosts') || '[]') as string[];
-        const alreadyLiked = storedLikes.includes(postId);
-
-        // Optimistic update
-        setHasLiked(!alreadyLiked);
-        setLikeCount((prev) => prev + (alreadyLiked ? -1 : 1));
+        const newLikes = isLiked ? localLikes - 1 : localLikes + 1;
+        setIsLiked(!isLiked);
+        setLocalLikes(newLikes);
 
         try {
-            const res = await fetch(`/api/posts/${postId}/like`, {
+            await fetch(`/api/posts/${postId}/like`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ unlike: alreadyLiked }), // toggle action
+                body: JSON.stringify({ liked: !isLiked }),
             });
-
-            if (!res.ok) throw new Error('Failed to toggle like');
-
-            // Update localStorage state
-            const updatedLikes = alreadyLiked
-                ? storedLikes.filter((id) => id !== postId)
-                : [...storedLikes, postId];
-            localStorage.setItem('likedPosts', JSON.stringify(updatedLikes));
+            // Pusher broadcast happens in API
         } catch (error) {
-            console.error('Error toggling like:', error);
-            // Revert optimistic update on error
-            setHasLiked(alreadyLiked);
-            setLikeCount((prev) => prev + (alreadyLiked ? 1 : -1));
+            console.error('Like failed:', error);
+            // Revert on error
+            setIsLiked(isLiked);
+            setLocalLikes(likes);
         }
     };
 
-    // ✅ Handle share (simple counter + backend sync)
     const handleShare = async () => {
-        try {
-            setShareCount((prev) => prev + 1); // optimistic UI
-            const res = await fetch(`/api/posts/${postId}/share`, { method: 'POST' });
-            if (!res.ok) throw new Error('Failed to share post');
+        const shareUrl = `${window.location.origin}/posts/${postId}`;
+        const newShares = localShares + 1;
+        setLocalShares(newShares); // Optimistic update
 
-            // Copy link to clipboard
-            const postUrl = `${window.location.origin}/posts/${postId}`;
-            await navigator.clipboard.writeText(postUrl);
-            alert('Post link copied to clipboard!');
+        // Copy to clipboard
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            alert('Link copied! Share it with friends.'); // Swap for toast lib later
+        } catch {
+            // Fallback
+            const textarea = document.createElement('textarea');
+            textarea.value = shareUrl;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Link copied!');
+        }
+
+        // API call to increment (no body needed)
+        try {
+            await fetch(`/api/posts/${postId}/share`, { method: 'POST' });
+            // Pusher handled in API
         } catch (error) {
-            console.error('Error sharing post:', error);
-            setShareCount((prev) => prev - 1);
+            console.error('Share increment failed:', error);
+            setLocalShares(shares); // Revert
+        }
+
+        // Native share (mobile/desktop)
+        if (navigator.share) {
+            navigator.share({
+                title: 'Be Honest Post',
+                text: 'Check out this customer service story!',
+                url: shareUrl,
+            }).catch(() => { }); // Ignore if cancelled
         }
     };
 
     return (
-        <div className="flex gap-2 mt-3">
-            {/* Like Button */}
-            <button
-                className={`btn secondary transition ${hasLiked ? 'bg-pink-500 text-white hover:bg-pink-600' : ''
-                    }`}
-                onClick={handleLike}
-            >
-                ❤️ {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
-            </button>
-
-            {/* Share Button */}
-            <button className="btn secondary" onClick={handleShare}>
-                🔗 {shareCount} {shareCount === 1 ? 'Share' : 'Shares'}
-            </button>
-
-            {/* Download Image (optional stub) */}
-            <button className="btn secondary">📥 Download image</button>
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-4">
+            <div className="flex items-center gap-6">
+                <button
+                    onClick={handleLike}
+                    className={`flex items-center gap-1 text-sm font-medium transition ${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    <Heart className="w-4 h-4" fill={isLiked ? 'currentColor' : 'none'} />
+                    {localLikes}
+                </button>
+                <button
+                    onClick={handleShare}
+                    className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+                >
+                    <Share2 className="w-4 h-4" />
+                    {localShares}
+                </button>
+            </div>
+            {/* <button className="text-sm text-gray-500 hover:text-gray-700">Comment</button> */}
         </div>
     );
 }

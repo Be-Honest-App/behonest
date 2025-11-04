@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { pusherClient } from '@/lib/pusherClient';
 import PostActions from './PostActions';
 
@@ -17,6 +17,37 @@ interface PostProps {
     likedBy?: string[];
 }
 
+// New component for handling truncated/expandable content
+export function PostContent({ content }: { content: string }) {
+    const [expanded, setExpanded] = useState(false);
+    const limit = 150; // Adjust this character limit as needed
+    const isLong = content.length > limit;
+
+    if (!isLong) {
+        return (
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                {content}
+            </p>
+        );
+    }
+
+    const truncated = `${content.slice(0, limit)}...`;
+
+    return (
+        <div className="mb-4">
+            <p className="text-sm text-gray-600 leading-relaxed">
+                {expanded ? content : truncated}
+            </p>
+            <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-sm text-orange-500 hover:cursor-pointer"
+            >
+                {expanded ? 'View less' : 'View more'}
+            </button>
+        </div>
+    );
+}
+
 const fetcher = async (url: string): Promise<PostProps[]> => {
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch');
@@ -24,7 +55,7 @@ const fetcher = async (url: string): Promise<PostProps[]> => {
     return data;
 };
 
-function formatRelativeTime(isoString: string): string {
+export function formatRelativeTime(isoString: string): string {
     const now = Date.now();
     const postDate = new Date(isoString).getTime();
     const diffMs = now - postDate;
@@ -73,7 +104,9 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             mutate(
                 (current = []) =>
                     current.map((p) =>
-                        p._id === updatedPost._id ? { ...p, likes: updatedPost.likes, likedBy: updatedPost.likedBy } : p
+                        p._id === updatedPost._id
+                            ? { ...p, likes: updatedPost.likes, likedBy: updatedPost.likedBy }
+                            : p
                     ),
                 { revalidate: false }
             );
@@ -84,7 +117,9 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             mutate(
                 (current = []) =>
                     current.map((p) =>
-                        p._id === updatedPost._id ? { ...p, shares: updatedPost.shares } : p
+                        p._id === updatedPost._id
+                            ? { ...p, shares: updatedPost.shares }
+                            : p
                     ),
                 { revalidate: false }
             );
@@ -97,42 +132,52 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     }, [mutate]);
 
     return (
-        <div className="card">
+        <div className="w-full">
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h2 className="m-0">Customer Service Stories</h2>
-                    <div className="muted mt-1">Top rants & reviews from around the world.</div>
+                    <h2 className="text-lg font-semibold text-gray-800 m-0">
+                        Customer Service Stories
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Top rants & reviews from around the world.
+                    </p>
                 </div>
 
-                <div className="flex gap-2 items-center">
-                    <div className="muted small">Sort</div>
-                    <select className="px-2 py-1 rounded border border-[var(--glass)]">
+                {/* <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600">Sort</label>
+                    <select className="px-2 py-1 text-sm rounded-md border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400">
                         <option>Latest</option>
                         <option>Trending</option>
                     </select>
-                </div>
+                </div> */}
             </div>
 
             {/* Feed list */}
-            <div className="feed mt-3">
+            <div className="space-y-5">
                 {posts?.length ? (
                     posts.map((post) => (
-                        <div key={post._id} className="post">
+                        <div
+                            key={post._id}
+                            className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 transition hover:shadow-md"
+                        >
                             {/* Post header */}
-                            <div className="flex items-center gap-2">
-                                <div className="pill">
-                                    {post.tag}{' '}
-                                    {post.businessName && post.businessName.trim() !== `(${post.businessName})`}
-                                </div>
-                                <div className="muted ml-auto">{formatRelativeTime(post.time)}</div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-orange-600">
+                                    {post.tag}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                    {formatRelativeTime(post.time)}
+                                </span>
                             </div>
 
                             {/* Post body */}
-                            <h3 className="my-2">{post.title}</h3>
-                            <div className="muted">{post.content}</div>
+                            <h3 className="text-gray-800 font-semibold text-base mb-1">
+                                {post.title}
+                            </h3>
+                            <PostContent content={post.content} />
 
-                            {/* ✅ Modular like/share actions */}
+                            {/* Like / Share Actions */}
                             <PostActions
                                 postId={post._id}
                                 likes={post.likes}
@@ -142,7 +187,9 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                         </div>
                     ))
                 ) : (
-                    <div className="muted">No posts yet - be the first to share!</div>
+                    <div className="text-sm text-gray-500 text-center py-8">
+                        No posts yet - be the first to share!
+                    </div>
                 )}
             </div>
         </div>

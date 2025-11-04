@@ -1,13 +1,11 @@
-"use server";
-
 import { Hero } from "./components/Hero";
-import { LeftCol } from "./components/LeftCol";
 import { Feed } from "./components/Feed";
 import { RightCol } from "./components/RightCol";
+import LeftCol from "./components/LeftCol";
+import { MobileLeftColToggle } from "./components/MobileLeftColToggle"; // New client component
 import dbConnect from "@/lib/mongodb";
 import Post from "../models/Post";
 import { Types } from "mongoose";
-import { SWRProvider } from "./providers/SWRProvider";
 
 export interface PostProps {
   _id: string;
@@ -58,7 +56,9 @@ export default async function Home() {
 
     const businessNames = processedPosts
       .filter(
-        (p) => p.businessName && p.businessName.trim().toLowerCase() !== "general"
+        (p) =>
+          p.businessName &&
+          p.businessName.trim().toLowerCase() !== "general"
       )
       .map((p) => p.businessName as string);
 
@@ -67,23 +67,38 @@ export default async function Home() {
     console.error("Failed to fetch posts:", error);
   }
 
-  const uniqueTags = [...new Set(initialPosts.map((post) => post.tag))].slice(
-    0,
-    4
-  );
+  const uniqueTags = [...new Set(initialPosts.map((post) => post.tag))].slice(0, 4);
 
   return (
-    <SWRProvider>
+    <>
       <Hero />
-      <LeftCol />
-      <div>
-        <Feed initialPosts={initialPosts} />
-      </div>
-      <RightCol
-        initialTags={
-          initialBusinessNames.length > 0 ? initialBusinessNames : uniqueTags
-        }
-      />
-    </SWRProvider>
+
+      {/* Main layout using flex */}
+      <main className="mx-5 md:mx-20 mt-8 flex flex-col lg:flex-row gap-6 relative">
+        {/* 🟩 Feed (full-width on mobile) */}
+        <section className="flex-1 lg:order-2">
+          <Feed initialPosts={initialPosts} />
+        </section>
+
+        {/* 🟦 Right Column (hidden on mobile, shown on lg+) */}
+        <aside className="hidden lg:block lg:w-1/4 lg:order-3">
+          <RightCol
+            initialTags={
+              initialBusinessNames.length > 0
+                ? initialBusinessNames
+                : uniqueTags
+            }
+          />
+        </aside>
+
+        {/* 🟧 Left Column (visible on lg+, toggled on mobile) */}
+        <aside className="hidden lg:block lg:w-1/4 lg:order-1">
+          <LeftCol />
+        </aside>
+
+        {/* Mobile Toggle: Floating + button */}
+        <MobileLeftColToggle />
+      </main>
+    </>
   );
 }
