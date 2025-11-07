@@ -46,8 +46,7 @@ import Post from '@/models/Post';
 import { pusherServer } from '@/lib/pusherServer';
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params; // ✅ await because it's a Promise
-  // ...rest of logic
+  const { id } = await context.params;
   try {
     await dbConnect();
 
