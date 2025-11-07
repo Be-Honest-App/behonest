@@ -112,7 +112,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </section>
 
         {/* 🟦 Right Column (hidden on mobile, shown on lg+, fixed/sticky) */}
-        <aside className="hidden lg:flex lg:w-1/4 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto">
+        <aside className="hidden lg:block lg:w-1/4 lg:order-3 sticky top-0 self-start h-screen overflow-y-auto">
           <RightCol
             initialTags={
               initialBusinessNames.length > 0
@@ -121,6 +121,7 @@ export default async function Home({ searchParams }: HomeProps) {
             }
           />
         </aside>
+
 
         {/* Mobile Toggle: Floating + button */}
         <MobileLeftColToggle />
