@@ -8,14 +8,18 @@ const postSchema = new Schema({
     businessName: {
         type: String, // Optional (no required: true; saves as null if omitted)
     },
+    country: {
+        type: String,
+        required: true,
+    },
     time: {
         type: String,
         required: true,
     },
-    title: {
-        type: String,
-        required: true,
-    },
+    // title: {
+    //     type: String,
+    //     required: true,
+    // },
     content: {
         type: String,
         required: true,

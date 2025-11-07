@@ -2,25 +2,25 @@
 
 import useSWR from 'swr';
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { pusherClient } from '@/lib/pusherClient';
-import PostActions from './PostActions';
+import PostActions from '../PostActions';
 
 interface PostProps {
     _id: string;
     tag: string;
     businessName?: string | null;
     time: string;
-    title: string;
     content: string;
     likes: number;
     shares: number;
     likedBy?: string[];
 }
 
-// New component for handling truncated/expandable content
+// PostContent component (unchanged)
 export function PostContent({ content }: { content: string }) {
     const [expanded, setExpanded] = useState(false);
-    const limit = 150; // Adjust this character limit as needed
+    const limit = 150;
     const isLong = content.length > limit;
 
     if (!isLong) {
@@ -81,7 +81,11 @@ export function formatRelativeTime(isoString: string): string {
 }
 
 export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
-    const { data: posts, mutate } = useSWR<PostProps[]>('/api/posts', fetcher, {
+    const searchParams = useSearchParams();
+    const queryString = searchParams.toString();
+    const swrKey = queryString ? `/api/posts?${queryString}` : '/api/posts';
+
+    const { data: posts, mutate, isLoading } = useSWR<PostProps[]>(swrKey, fetcher, {
         fallbackData: initialPosts,
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
@@ -89,7 +93,7 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
 
     const latestId = useRef(posts?.[0]?._id);
 
-    // ✅ Real-time updates with Pusher (unchanged)
+    // Real-time updates with Pusher
     useEffect(() => {
         const channel = pusherClient.subscribe('posts-channel');
 
@@ -122,25 +126,29 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             );
         });
 
+        // Optional: Bind for deletes if you add them later
+        // channel.bind('delete-post', (deletedPostId: string) => {
+        //     mutate((current = []) => current.filter((p) => p._id !== deletedPostId), { revalidate: false });
+        // });
+
         return () => {
             channel.unbind_all();
             pusherClient.unsubscribe('posts-channel');
         };
     }, [mutate]);
 
+    const hasActiveFilters = searchParams.get('industry') || searchParams.get('country');
+
+    if (isLoading && !posts) {
+        return <div className="text-center py-8 text-gray-500">Loading posts...</div>;
+    }
+
     return (
         <div className="w-full">
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800 m-0">
-                        Customer Service Stories
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Top rants & reviews from around the world.
-                    </p>
-                </div>
 
+                {/* Sort dropdown (uncomment if needed) */}
                 {/* <div className="flex items-center gap-2">
                     <label className="text-sm text-gray-600">Sort</label>
                     <select className="px-2 py-1 text-sm rounded-md border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400">
@@ -169,9 +177,6 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                             </div>
 
                             {/* Post body */}
-                            <h3 className="text-gray-800 font-semibold text-base mb-1">
-                                {post.title}
-                            </h3>
                             <PostContent content={post.content} />
 
                             {/* Like / Share Actions */}
@@ -185,7 +190,7 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                     ))
                 ) : (
                     <div className="text-sm text-gray-500 text-center py-8">
-                        No posts yet - be the first to share!
+                        {hasActiveFilters ? 'No posts match your filters. Try adjusting them!' : 'No posts yet - be the first to share!'}
                     </div>
                 )}
             </div>

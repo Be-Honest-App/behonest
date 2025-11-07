@@ -5,8 +5,8 @@ import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import PostActions from '@/app/components/PostActions'; // Adjust path
-import { PostContent } from '@/app/components/Feed'; // From Feed
-import { formatRelativeTime } from '@/app/components/Feed'; // Reuse from Feed
+import { PostContent } from '@/app/components/Post/Feed'; // From Feed
+import { formatRelativeTime } from '@/app/components/Post/Feed'; // Reuse from Feed
 
 interface PostProps {
     _id: string;

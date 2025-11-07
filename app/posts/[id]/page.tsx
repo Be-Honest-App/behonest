@@ -2,7 +2,8 @@
 import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/mongodb'; // Your DB connect function
 import Post from '@/models/Post'; // Your Mongoose model
-import PostActions from '@/app/components/PostActions'; // Import actions (client component OK)
+import PostActions from '@/app/components/PostActions';
+import PostContent from '@/app/components/PostContent'; 
 
 interface PostProps {
     _id: string;
@@ -14,31 +15,6 @@ interface PostProps {
     likes: number;
     shares: number;
     likedBy?: string[];
-}
-
-// Inline PostContent for server rendering (no state, so no 'use client' needed)
-function PostContent({ content }: { content: string }) {
-    const limit = 150;
-    const isLong = content.length > limit;
-    if (!isLong) {
-        return (
-            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                {content}
-            </p>
-        );
-    }
-
-    const truncated = `${content.slice(0, limit)}...`;
-    return (
-        <div className="mb-4">
-            <p className="text-sm text-gray-600 leading-relaxed">
-                {truncated} {/* Simplified: Always truncated on server; expand via client if needed */}
-            </p>
-            <button className="text-sm text-orange-500 hover:text-orange-600 underline">
-                View more
-            </button>
-        </div>
-    );
 }
 
 async function getPost(id: string): Promise<PostProps | null> {
@@ -98,7 +74,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
     }
 
     return (
-        <article className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md my-8">
+        <article className="max-w-xl mx-auto p-6 bg-white rounded-2xl shadow-md my-8">
             {/* Post header */}
             <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-orange-600">{post.tag}</span>

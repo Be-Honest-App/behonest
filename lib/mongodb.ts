@@ -37,7 +37,7 @@ async function dbConnect() {
     if (!cached.promise) {
         const opts = {
             bufferCommands: false,
-            serverSelectionTimeoutMS: 60000,  // 60s timeout for discovering Atlas replica set nodes (default 30s often fails)
+            serverSelectionTimeoutMS: 90000,  // 60s timeout for discovering Atlas replica set nodes (default 30s often fails)
             socketTimeoutMS: 45000,           // 45s for socket operations
             family: 4,                        // Force IPv4 (avoids IPv6 resolution issues)
             // ssl: true,                      // Already implied in Atlas URIs, but explicit if needed

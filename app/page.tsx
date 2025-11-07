@@ -1,11 +1,14 @@
+// app/page.tsx (updated for country filter in query)
 import { Hero } from "./components/Hero";
-import { Feed } from "./components/Feed";
+import { Feed } from "./components/Post/Feed";
+import SubFeed from "./components/Post/SubFeed";
 import { RightCol } from "./components/RightCol";
 import LeftCol from "./components/LeftCol";
-import { MobileLeftColToggle } from "./components/MobileLeftColToggle"; // New client component
+import { MobileLeftColToggle } from "./components/MobileLeftColToggle";
 import dbConnect from "@/lib/mongodb";
 import Post from "../models/Post";
 import { Types } from "mongoose";
+import type { FilterQuery } from 'mongoose';
 
 export interface PostProps {
   _id: string;
@@ -33,14 +36,31 @@ interface RawPost {
   updatedAt: Date;
 }
 
-export default async function Home() {
+interface HomeProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
   await dbConnect();
 
   let initialPosts: PostProps[] = [];
   let initialBusinessNames: string[] = [];
 
   try {
-    const rawPosts = (await Post.find({})
+    // Build dynamic query based on params
+    const where: FilterQuery<typeof Post> = {};
+    const industry = params.industry as string | undefined;
+    const country = params.country as string | undefined;  // Changed from search
+
+    if (industry) {
+      where.businessName = { $regex: industry, $options: 'i' };
+    }
+    if (country) {
+      where.country = country;  // Exact match on country code
+    }
+
+    const rawPosts = (await Post.find(where)
       .sort({ createdAt: -1 })
       .limit(10)
       .lean()) as unknown as RawPost[];
@@ -74,14 +94,23 @@ export default async function Home() {
       <Hero />
 
       {/* Main layout using flex */}
-      <main className="mx-5 md:mx-20 mt-8 flex flex-col lg:flex-row gap-6 relative">
-        {/* 🟩 Feed (full-width on mobile) */}
-        <section className="flex-1 lg:order-2">
-          <Feed initialPosts={initialPosts} />
+      <main className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] mt-10 gap-6 overflow-hidden">
+
+        {/* 🟧 Left Column (visible on lg+, fixed/sticky) */}
+        <aside className="hidden lg:flex lg:w-1/4 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto">
+          <LeftCol />
+        </aside>
+
+        {/* 🟩 Feed (full-width on mobile, scrollable) */}
+        <section className="flex-1 h-[calc(100vh-4rem)] px-2 md:px-0">
+          <SubFeed />
+          <div className="overflow-y-auto">
+            <Feed initialPosts={initialPosts} />
+          </div>
         </section>
 
-        {/* 🟦 Right Column (hidden on mobile, shown on lg+) */}
-        <aside className="hidden lg:block lg:w-1/4 lg:order-3">
+        {/* 🟦 Right Column (hidden on mobile, shown on lg+, fixed/sticky) */}
+        <aside className="hidden lg:flex lg:w-1/4 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto">
           <RightCol
             initialTags={
               initialBusinessNames.length > 0
@@ -89,11 +118,6 @@ export default async function Home() {
                 : uniqueTags
             }
           />
-        </aside>
-
-        {/* 🟧 Left Column (visible on lg+, toggled on mobile) */}
-        <aside className="hidden lg:block lg:w-1/4 lg:order-1">
-          <LeftCol />
         </aside>
 
         {/* Mobile Toggle: Floating + button */}
