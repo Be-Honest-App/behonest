@@ -97,14 +97,16 @@ export default async function Home({ searchParams }: HomeProps) {
       <main className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] mt-10 gap-6 overflow-hidden">
 
         {/* 🟧 Left Column (visible on lg+, fixed/sticky) */}
-        <aside className="hidden lg:flex lg:w-1/4 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto">
+        <aside className="hidden lg:flex lg:w-1/4 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto -px-10">
           <LeftCol />
         </aside>
 
         {/* 🟩 Feed (full-width on mobile, scrollable) */}
-        <section className="flex-1 h-[calc(100vh-4rem)] px-2 md:px-0">
-          <SubFeed />
-          <div className="overflow-y-auto">
+        <section className="flex-1 flex flex-col overflow-y-auto">
+          <div className="pb-0 md:pb-10">
+            <SubFeed />
+          </div>
+          <div className="overflow-y-auto flex-1 h-[calc(100vh-4rem)] px-2 md:px-0">
             <Feed initialPosts={initialPosts} />
           </div>
         </section>
