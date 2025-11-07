@@ -528,7 +528,7 @@ export default function LeftCol() {
                         <button
                             onClick={handlePost}
                             disabled={isPosting || !postText.trim() || !category || !country}
-                            className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-md transition"
+                            className="bg-orange-500 hover:bg-orange-600 hover:cursor-pointer disabled:opacity-50 text-white text-sm px-4 py-2 rounded-md transition"
                         >
                             {isPosting ? 'Posting...' : 'Post Anonymously'}
                         </button>
