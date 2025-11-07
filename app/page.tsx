@@ -103,7 +103,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
         {/* 🟩 Feed (full-width on mobile, scrollable) */}
         <section className="flex-1 flex flex-col overflow-y-auto">
-          <div className="pb-0 md:pb-10">
+          <div className="pb-10 md:pb-10">
             <SubFeed />
           </div>
           <div className="overflow-y-auto flex-1 h-[calc(100vh-4rem)] px-2 md:px-0">
