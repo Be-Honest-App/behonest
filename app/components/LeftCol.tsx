@@ -258,12 +258,12 @@ export default function LeftCol() {
         }
     }
 
-    // const handleFiltersApply = (newFilters: { industry: string; country: string }) => {
+    // const handleFiltersApply = (newFilters: { category: string; country: string }) => {
     //     const params = new URLSearchParams(searchParams.toString())
-    //     if (newFilters.industry) {
-    //         params.set('industry', newFilters.industry)
+    //     if (newFilters.category) {
+    //         params.set('category', newFilters.category)
     //     } else {
-    //         params.delete('industry')
+    //         params.delete('category')
     //     }
     //     if (newFilters.country) {
     //         params.set('country', newFilters.country)
@@ -545,7 +545,7 @@ export default function LeftCol() {
             {/* <Filters
                 onApply={handleFiltersApply}
                 onClear={handleFiltersClear}
-                initialIndustry={searchParams.get('industry') || ''}
+                initialCategory={searchParams.get('category') || ''}
                 initialCountry={searchParams.get('country') || ''}
             /> */}
         </div>

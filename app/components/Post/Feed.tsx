@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { pusherClient } from '@/lib/pusherClient';
+import { type Channel } from 'pusher-js'; // NEW: Direct import of Channel type from pusher-js
 import PostActions from '../PostActions';
 
 interface PostProps {
@@ -89,16 +90,37 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
         fallbackData: initialPosts,
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
+        keepPreviousData: true,  // Prevents flicker/revert during re-fetches
+        // refreshInterval: 0,  // Disabled polling (Pusher handles real-time)
     });
 
     const latestId = useRef(posts?.[0]?._id);
+    const channelRef = useRef<Channel | null>(null);  // Now properly typed via direct import
+    const queryStringRef = useRef(queryString);  // Ref for stable access in Pusher handler (avoids ESLint dep issue)
 
-    // Real-time updates with Pusher
+    // Update ref on queryString change
     useEffect(() => {
-        const channel = pusherClient.subscribe('posts-channel');
+        queryStringRef.current = queryString;
+    }, [queryString]);
 
-        channel.bind('new-post', (newPost: PostProps) => {
-            mutate((current = []) => [newPost, ...current], { revalidate: false });
+    // Re-fetch on filter changes
+    useEffect(() => {
+        mutate();
+    }, [queryString, mutate]);
+
+    // Pusher: Bind once on mount, unbind on unmount (stable deps)
+    useEffect(() => {
+        if (!channelRef.current) {
+            channelRef.current = pusherClient.subscribe('posts-channel');
+        }
+        const channel = channelRef.current;
+
+        console.log('Pusher bound');  // DEBUG: Logs once per mount
+
+        channel.bind('new-post', async (newPost: PostProps) => {
+            console.log('New post event:', newPost._id, 'Current filters:', queryStringRef.current);  // Use ref (no dep needed)
+            // Always revalidate (API enforces filters—no optimistic insert)
+            await mutate();
             latestId.current = newPost._id;
         });
 
@@ -126,22 +148,22 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             );
         });
 
-        // Optional: Bind for deletes if you add them later
-        // channel.bind('delete-post', (deletedPostId: string) => {
-        //     mutate((current = []) => current.filter((p) => p._id !== deletedPostId), { revalidate: false });
-        // });
-
         return () => {
-            channel.unbind_all();
-            pusherClient.unsubscribe('posts-channel');
+            if (channel) {
+                channel.unbind_all();
+                pusherClient.unsubscribe('posts-channel');
+                channelRef.current = null;
+            }
         };
-    }, [mutate]);
+    }, [mutate]);  // Stable deps—no queryString (use ref inside)
 
-    const hasActiveFilters = searchParams.get('industry') || searchParams.get('country');
+    const hasActiveFilters = searchParams.get('category') || searchParams.get('country');
 
     if (isLoading && !posts) {
         return <div className="text-center py-8 text-gray-500">Loading posts...</div>;
     }
+
+    console.log('Rendered posts count:', posts?.length, 'Filters active:', hasActiveFilters);  // DEBUG
 
     return (
         <div className="w-full">
@@ -175,6 +197,10 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                                     {formatRelativeTime(post.time)}
                                 </span>
                             </div>
+                            
+                            <span className="text-lg font-semibold text-gray-800 mb-2 block">
+                                <PostContent content={post.businessName ?? ''} />
+                            </span>
 
                             {/* Post body */}
                             <PostContent content={post.content} />

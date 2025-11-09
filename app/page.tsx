@@ -1,4 +1,4 @@
-// app/page.tsx (updated for country filter in query)
+// app/page.tsx (updated for category filter in query)
 import { Hero } from "./components/Hero";
 import { Feed } from "./components/Post/Feed";
 import SubFeed from "./components/Post/SubFeed";
@@ -15,7 +15,6 @@ export interface PostProps {
   tag: string;
   businessName?: string | null;
   time: string;
-  title: string;
   content: string;
   likes: number;
   shares: number;
@@ -28,7 +27,6 @@ interface RawPost {
   tag: string;
   businessName?: string | null;
   time: string;
-  title: string;
   content: string;
   likes: number;
   shares: number;
@@ -50,19 +48,20 @@ export default async function Home({ searchParams }: HomeProps) {
   try {
     // Build dynamic query based on params
     const where: FilterQuery<typeof Post> = {};
-    const industry = params.industry as string | undefined;
-    const country = params.country as string | undefined;  // Changed from search
+    const category = params.category as string | undefined;  // Changed from 'industry'
+    const country = params.country as string | undefined;
 
-    if (industry) {
-      where.businessName = { $regex: industry, $options: 'i' };
+    if (category) {
+      // Filter tag: e.g., category="Customer Service" matches tags starting with it
+      where.tag = { $regex: `^${category}`, $options: 'i' };
     }
     if (country) {
-      where.country = country;  // Exact match on country code
+      where.country = country;  // Exact match on country code (assuming Post has 'country' field)
     }
 
     const rawPosts = (await Post.find(where)
       .sort({ createdAt: -1 })
-      .limit(10)
+      // No .limit()—match SWR's unlimited fetch for consistency
       .lean()) as unknown as RawPost[];
 
     const processedPosts: PostProps[] = rawPosts.map((p) => ({
@@ -121,7 +120,6 @@ export default async function Home({ searchParams }: HomeProps) {
             }
           />
         </aside>
-
 
         {/* Mobile Toggle: Floating + button */}
         <MobileLeftColToggle />
