@@ -1,6 +1,8 @@
 'use client';
 
 import useSWR from 'swr';
+import { useEffect, useState } from 'react';
+import { pusherClient } from '@/lib/pusherClient'; // Your client instance
 
 interface PostProps {
     _id?: string;
@@ -15,6 +17,7 @@ interface PostProps {
 
 interface ApiResponse {
     data?: PostProps[];
+    topTags?: { name: string; count: number }[]; // From GET
 }
 
 interface RightColProps {
@@ -22,23 +25,34 @@ interface RightColProps {
 }
 
 export function RightCol({ initialTags }: RightColProps) {
+    const [tags, setTags] = useState<string[]>(initialTags); // Local state for real-time
+
     const { data: apiData } = useSWR<ApiResponse>('/api/posts', {
-        fallbackData: { data: [] },
+        fallbackData: { data: [], topTags: [] },
         revalidateOnFocus: false,
         refreshInterval: 0,
     });
 
-    const posts = apiData?.data ?? [];
+    // Set initial topTags from SWR
+    useEffect(() => {
+        if (apiData?.topTags && apiData.topTags.length > 0) {
+            setTags(apiData.topTags.map((t) => t.name));
+        }
+    }, [apiData?.topTags]);
 
-    const computedTags = [
-        ...new Set(
-            posts
-                .filter((p) => p.businessName && p.businessName.trim() !== 'General')
-                .map((p) => p.businessName!.trim())
-        ),
-    ].slice(0, 4);
+    // Pusher subscription for real-time tag updates
+    useEffect(() => {
+        const channel = pusherClient.subscribe('posts-channel');
 
-    const tags = computedTags.length > 0 ? computedTags : initialTags;
+        channel.bind('update-tags', ({ topTags }: { topTags: { name: string; count: number }[] }) => {
+            setTags(topTags.map((t) => t.name)); // Update state instantly
+        });
+
+        return () => {
+            channel.unbind('update-tags');
+            pusherClient.unsubscribe('posts-channel');
+        };
+    }, []);
 
     return (
         <div className="bg-white rounded-2xl shadow-md p-5">

@@ -1,10 +1,12 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation'; // Add useRouter
 import { pusherClient } from '@/lib/pusherClient';
 import PostActions from '../PostActions';
+import PostContent from '../PostContent'; // Your imported component
+// import Filters from '../Filters'; // New/updated filter component below
 
 interface PostProps {
     _id: string;
@@ -15,37 +17,6 @@ interface PostProps {
     likes: number;
     shares: number;
     likedBy?: string[];
-}
-
-// PostContent component (unchanged)
-export function PostContent({ content }: { content: string }) {
-    const [expanded, setExpanded] = useState(false);
-    const limit = 150;
-    const isLong = content.length > limit;
-
-    if (!isLong) {
-        return (
-            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                {content}
-            </p>
-        );
-    }
-
-    const truncated = `${content.slice(0, limit)}...`;
-
-    return (
-        <div className="mb-4">
-            <p className="text-sm text-gray-600 leading-relaxed">
-                {expanded ? content : truncated}
-            </p>
-            <button
-                onClick={() => setExpanded(!expanded)}
-                className="text-sm text-orange-500 hover:cursor-pointer"
-            >
-                {expanded ? 'View less' : 'View more'}
-            </button>
-        </div>
-    );
 }
 
 const fetcher = async (url: string): Promise<PostProps[]> => {
@@ -82,6 +53,7 @@ export function formatRelativeTime(isoString: string): string {
 
 export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     const searchParams = useSearchParams();
+    // const router = useRouter(); // For URL updates
     const queryString = searchParams.toString();
     const swrKey = queryString ? `/api/posts?${queryString}` : '/api/posts';
 
@@ -92,71 +64,74 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     });
 
     const latestId = useRef(posts?.[0]?._id);
+    const currentTag = searchParams.get('tag'); // Read current tag filter
 
-    // Real-time updates with Pusher
+    // Pusher for real-time (filter new posts client-side if tag active)
     useEffect(() => {
         const channel = pusherClient.subscribe('posts-channel');
 
         channel.bind('new-post', (newPost: PostProps) => {
-            mutate((current = []) => [newPost, ...current], { revalidate: false });
+            // If no filter or matches current tag, add to top
+            if (!currentTag || newPost.tag === currentTag) {
+                mutate((current = []) => [newPost, ...current], { revalidate: false });
+            }
             latestId.current = newPost._id;
         });
 
-        channel.bind('update-like', (updatedPost: PostProps) => {
-            mutate(
-                (current = []) =>
-                    current.map((p) =>
-                        p._id === updatedPost._id
-                            ? { ...p, likes: updatedPost.likes, likedBy: updatedPost.likedBy }
-                            : p
-                    ),
+        channel.bind('update-like', (updated: { id: string; likes: number }) => {
+            mutate((current = []) =>
+                current.map((p) => (p._id === updated.id ? { ...p, likes: updated.likes } : p)),
                 { revalidate: false }
             );
         });
 
-        channel.bind('update-share', (updatedPost: PostProps) => {
-            mutate(
-                (current = []) =>
-                    current.map((p) =>
-                        p._id === updatedPost._id
-                            ? { ...p, shares: updatedPost.shares }
-                            : p
-                    ),
+        channel.bind('update-share', (updated: { id: string; shares: number }) => {
+            mutate((current = []) =>
+                current.map((p) => (p._id === updated.id ? { ...p, shares: updated.shares } : p)),
                 { revalidate: false }
             );
         });
-
-        // Optional: Bind for deletes if you add them later
-        // channel.bind('delete-post', (deletedPostId: string) => {
-        //     mutate((current = []) => current.filter((p) => p._id !== deletedPostId), { revalidate: false });
-        // });
 
         return () => {
             channel.unbind_all();
             pusherClient.unsubscribe('posts-channel');
         };
-    }, [mutate]);
+    }, [mutate, currentTag]); // Re-sub on tag change
 
-    const hasActiveFilters = searchParams.get('industry') || searchParams.get('country');
+    // const handleFilterChange = (newFilters: { tag?: string; country?: string }) => {
+    //     const params = new URLSearchParams(searchParams.toString());
+    //     if (newFilters.tag) {
+    //         params.set('tag', newFilters.tag);
+    //     } else {
+    //         params.delete('tag');
+    //     }
+    //     if (newFilters.country) {
+    //         params.set('country', newFilters.country);
+    //     } else {
+    //         params.delete('country');
+    //     }
+    //     router.push(`?${params.toString()}`); // Update URL, triggers SWR re-fetch
+    // };
+
+    const hasActiveFilters = searchParams.get('tag') || searchParams.get('country');
 
     if (isLoading && !posts) {
         return <div className="text-center py-8 text-gray-500">Loading posts...</div>;
     }
 
     return (
-        <div className="w-full">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-
-                {/* Sort dropdown (uncomment if needed) */}
-                {/* <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-600">Sort</label>
-                    <select className="px-2 py-1 text-sm rounded-md border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400">
-                        <option>Latest</option>
-                        <option>Trending</option>
-                    </select>
-                </div> */}
-            </div>
+        <div className="flex-1 max-w-2xl mx-auto p-4">
+            {/* Header with Filters */}
+            {/* <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Be-Honest Feed</h1>
+                <Filters
+                    industries={['Customer Service', 'Work Life', 'Student Life']} // Hardcoded or from topTags
+                    initialTag={searchParams.get('tag') || ''}
+                    initialCountry={searchParams.get('country') || ''}
+                    onChange={(filters) => handleFilterChange({ tag: filters.tag, country: filters.country })}
+                    onClear={() => handleFilterChange({})} // Clear both
+                />
+            </div> */}
 
             {/* Feed list */}
             <div className="space-y-5">
@@ -168,9 +143,14 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                         >
                             {/* Post header */}
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-orange-600">
-                                    {post.tag}
-                                </span>
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-sm font-medium text-orange-600">
+                                        {post.tag}
+                                    </span>
+                                    {post.businessName && (
+                                        <span className="text-sm font-medium text-orange-600">• {post.businessName}</span>
+                                    )}
+                                </div>
                                 <span className="text-xs text-gray-500">
                                     {formatRelativeTime(post.time)}
                                 </span>

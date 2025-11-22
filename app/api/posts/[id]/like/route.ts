@@ -44,35 +44,68 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import { pusherServer } from '@/lib/pusherServer';
+import { Redis } from '@upstash/redis';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }  // Awaitable Promise type
+) {
   await dbConnect();
 
   try {
-    const { id } = await params;
-    const post = await Post.findById(id);
+    const awaitedParams = await params;  // Await here
+    const { id } = awaitedParams;  // Now safe to destructure
+    const body = await request.json();
+    const { fingerprintHash } = body; // Required from client
 
+    if (!fingerprintHash) {
+      return NextResponse.json({ error: 'Missing fingerprint' }, { status: 400 });
+    }
+
+    const post = await Post.findById(id);
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Update likes (add user ID to likedBy if not already, for uniqueness)
-    const userId = Date.now(); // Replace with real user ID from session/auth 'user-' + Date.now(); 
-    if (!post.likedBy.includes(userId)) {
-      post.likes += 1;
-      post.likedBy.push(userId);
+    // IP extraction
+    const clientIp =
+      request.headers
+        .get('x-forwarded-for')
+        ?.split(',')[0]
+        ?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+
+    // Super-secure key: post + IP + fingerprint hash
+    const limitKey = `like:${id}:${clientIp}:${fingerprintHash}`;
+    const exists = await redis.get(limitKey); // Check if already liked
+
+    if (exists) {
+      return NextResponse.json(
+        { error: 'Already liked this post' },
+        { status: 429 }
+      );
     }
 
+    // Set key with 1-hour TTL
+    await redis.set(limitKey, 1, { ex: 3600 });
+
+    // Increment
+    post.likes += 1;
     await post.save();
 
-    // Broadcast updated post to all clients
+    // Broadcast
     await pusherServer.trigger('posts-channel', 'update-like', {
-      _id: post._id,
+      id: post._id.toString(),
       likes: post.likes,
-      likedBy: post.likedBy,
     });
 
-    return NextResponse.json({ success: true, data: post });
+    return NextResponse.json({ success: true, data: { id, likes: post.likes } }, { status: 201 });
   } catch (error) {
     console.error('Like error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

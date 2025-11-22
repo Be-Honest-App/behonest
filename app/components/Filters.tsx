@@ -1,54 +1,53 @@
-// components/Filters.tsx (updated for country dropdown)
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 interface FiltersProps {
-    industries?: string[]
-    onApply?: (filters: { industry: string; country: string }) => void
-    onClear?: () => void
-    initialIndustry?: string
-    initialCountry?: string  // Changed from initialSearchTerm
+    industries?: string[]; // e.g., ['Customer Service', 'Work Life']
+    onChange?: (filters: { tag: string; country: string }) => void; // Renamed from onApply
+    onClear?: () => void;
+    initialTag?: string; // Renamed from initialIndustry
+    initialCountry?: string;
 }
 
 export default function Filters({
-    industries = ['Banking', 'Telecom', 'Food & Beverage'],
-    onApply,
+    industries = ['Banking', 'Telecom', 'Food & Beverage'], // Default/fallback
+    onChange,
     onClear,
-    initialIndustry = '',
-    initialCountry = ''  // Changed from initialSearchTerm
+    initialTag = '',
+    initialCountry = ''
 }: FiltersProps) {
-    const [selectedIndustry, setSelectedIndustry] = useState(initialIndustry)
-    const [selectedCountry, setSelectedCountry] = useState(initialCountry)  // Changed from searchTerm
+    const [selectedTag, setSelectedTag] = useState(initialTag); // Renamed from selectedIndustry
+    const [selectedCountry, setSelectedCountry] = useState(initialCountry);
 
-    // Sync local state with props when they change (e.g., after apply/clear from parent)
+    // Sync local state with props (e.g., after clear from parent)
     useEffect(() => {
-        setSelectedIndustry(initialIndustry)
-    }, [initialIndustry])
+        setSelectedTag(initialTag);
+    }, [initialTag]);
 
     useEffect(() => {
-        setSelectedCountry(initialCountry)
-    }, [initialCountry])
+        setSelectedCountry(initialCountry);
+    }, [initialCountry]);
 
     const handleApply = () => {
-        onApply?.({ industry: selectedIndustry, country: selectedCountry })
-    }
+        onChange?.({ tag: selectedTag, country: selectedCountry });
+    };
 
     const handleClear = () => {
-        setSelectedIndustry('')
-        setSelectedCountry('')
-        onClear?.()
-    }
+        setSelectedTag('');
+        setSelectedCountry('');
+        onClear?.();
+    };
 
     return (
         <div className="bg-white rounded-2xl shadow-md p-5">
             <strong className="text-gray-800 text-lg block mb-3">Filters</strong>
             <select
-                value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
                 className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-orange-400 mb-3"
             >
-                <option value="">Select industry</option>
+                <option value="">Select tag</option> {/* Changed label */}
                 {industries.map((industry) => (
                     <option key={industry} value={industry}>
                         {industry}
@@ -273,5 +272,5 @@ export default function Filters({
                 </button>
             </div>
         </div>
-    )
+    );
 }
