@@ -40,10 +40,11 @@ import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import { pusherServer } from '@/lib/pusherServer';
 
-export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-    const { id } = await context.params;
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    await dbConnect();
+
     try {
-        await dbConnect();
+        const { id } = await params;
         const post = await Post.findById(id);
 
         if (!post) {
