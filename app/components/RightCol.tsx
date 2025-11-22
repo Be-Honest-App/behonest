@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import { pusherClient } from '@/lib/pusherClient'; // Your client instance
@@ -57,33 +55,29 @@ export function RightCol({ initialTags }: RightColProps) {
     }, []);
 
     return (
-        <div className="bg-white rounded-2xl shadow-md p-5 sticky top-0 h-screen overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-md p-5">
+            {/* Trending Tags */}
             <div className="flex justify-between items-center mb-3">
                 <strong className="text-gray-800 text-lg">Trending Tags</strong>
-                <span className="text-orange-500 text-sm font-medium">#customerstories</span>
+                <span className="text-orange-500 text-sm font-medium">
+                    #customerstories
+                </span>
             </div>
 
             <div className="flex flex-col gap-2">
-                {trendingTags.length ? (
-                    trendingTags.map((tag) => (
-                        <button
-                            key={tag}
-                            onClick={() => handleTagClick(tag)}
-                            className={`text-sm text-left transition px-2 py-1 rounded-md ${activeTag === tag
-                                    ? 'bg-orange-100 text-orange-700 font-semibold'
-                                    : 'text-gray-700 hover:text-orange-600'
-                                }`}
-                        >
-                            #{tag}
-                        </button>
-                    ))
-                ) : (
-                    <p className="text-sm text-gray-500">No trending tags yet</p>
-                )}
+                {tags.map((tag) => (
+                    <div
+                        key={tag}
+                        className="text-sm text-gray-700 hover:text-orange-600 cursor-pointer transition"
+                    >
+                        #{tag}
+                    </div>
+                ))}
             </div>
 
             <hr className="my-5 border-t border-gray-100" />
 
+            {/* Why Be Honest section */}
             <div>
                 <strong className="text-gray-800 text-lg">Why Be Honest?</strong>
                 <p className="text-sm text-gray-600 mt-2 leading-relaxed">
