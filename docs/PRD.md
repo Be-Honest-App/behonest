@@ -1,9 +1,9 @@
-# Product Requirements Document (PRD) — Be-Honest
+# Product Requirements Document (PRD) — BeHonest
 
 Last updated: 2025-11-22
 
 Overview
-- Be-Honest is a lightweight social feed built with Next.js (App Router), TypeScript, Tailwind CSS and MongoDB. The app enables short 'posts' (shouts) tagged by industry or topic and supports real-time updates via Pusher for likes, shares and new posts.
+- BeHonest is a lightweight social feed built with Next.js (App Router), TypeScript, Tailwind CSS and MongoDB. The app enables short 'posts' (shouts) tagged by industry or topic and supports real-time updates via Pusher for likes, shares and new posts.
 
 Purpose and Objectives
 - Purpose: Provide a minimal, fast and private-friendly feed where users can publish short posts and interact (like/share) while seeing near real-time updates.
