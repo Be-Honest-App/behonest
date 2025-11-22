@@ -14,7 +14,7 @@ export function MobileLeftColToggle() {
             {/* Floating + button on mobile */}
             <button
                 onClick={toggleLeftCol}
-                className="fixed bottom-14 right-4 z-50 w-24 h-24 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center text-5xl font-bold md:hidden focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="fixed bottom-10 right-4 z-50 w-24 h-24 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center text-5xl font-bold md:hidden focus:outline-none focus:ring-2 focus:ring-orange-400"
                 aria-label="Open compose"
             >
                 +

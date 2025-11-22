@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation'; // Add useRouter
 import { pusherClient } from '@/lib/pusherClient';
+import { type Channel } from 'pusher-js'; // NEW: Direct import of Channel type from pusher-js
 import PostActions from '../PostActions';
 import PostContent from '../PostContent'; // Your imported component
 // import Filters from '../Filters'; // New/updated filter component below
@@ -61,6 +62,8 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
         fallbackData: initialPosts,
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
+        keepPreviousData: true,  // Prevents flicker/revert during re-fetches
+        // refreshInterval: 0,  // Disabled polling (Pusher handles real-time)
     });
 
     const latestId = useRef(posts?.[0]?._id);
@@ -68,7 +71,8 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
 
     // Pusher for real-time (filter new posts client-side if tag active)
     useEffect(() => {
-        const channel = pusherClient.subscribe('posts-channel');
+        queryStringRef.current = queryString;
+    }, [queryString]);
 
         channel.bind('new-post', (newPost: PostProps) => {
             // If no filter or matches current tag, add to top
@@ -93,8 +97,11 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
         });
 
         return () => {
-            channel.unbind_all();
-            pusherClient.unsubscribe('posts-channel');
+            if (channel) {
+                channel.unbind_all();
+                pusherClient.unsubscribe('posts-channel');
+                channelRef.current = null;
+            }
         };
     }, [mutate, currentTag]); // Re-sub on tag change
 
@@ -118,6 +125,8 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     if (isLoading && !posts) {
         return <div className="text-center py-8 text-gray-500">Loading posts...</div>;
     }
+
+    console.log('Rendered posts count:', posts?.length, 'Filters active:', hasActiveFilters);  // DEBUG
 
     return (
         <div className="flex-1 max-w-2xl mx-auto p-4">
@@ -155,6 +164,10 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                                     {formatRelativeTime(post.time)}
                                 </span>
                             </div>
+                            
+                            <span className="text-lg font-semibold text-gray-800 mb-2 block">
+                                <PostContent content={post.businessName ?? ''} />
+                            </span>
 
                             {/* Post body */}
                             <PostContent content={post.content} />
