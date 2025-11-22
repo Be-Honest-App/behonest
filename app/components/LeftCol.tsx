@@ -295,7 +295,7 @@ export default function LeftCol() {
                     required
                 >
                     <option value="">Select Category</option>
-                    <option value="General">General</option>
+                    <option value="Personal Stories">Personal Stories</option>
                     <option value="Work Life">Work Life</option>
                     <option value="Customer Service">Customer Service</option>
                     <option value="Student Life">Student Life</option>
