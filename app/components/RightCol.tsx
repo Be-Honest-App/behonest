@@ -3,10 +3,8 @@
 'use client';
 
 import useSWR from 'swr';
-import { useMemo, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation'; // ✅ this line is crucial
-import { pusherClient } from '@/lib/pusherClient';
-
+import { useEffect, useState } from 'react';
+import { pusherClient } from '@/lib/pusherClient'; // Your client instance
 
 interface PostProps {
     _id?: string;
@@ -21,6 +19,7 @@ interface PostProps {
 
 interface ApiResponse {
     data?: PostProps[];
+    topTags?: { name: string; count: number }[]; // From GET
 }
 
 interface RightColProps {
@@ -28,64 +27,34 @@ interface RightColProps {
 }
 
 export function RightCol({ initialTags }: RightColProps) {
-  const { data: apiData, mutate } = useSWR<ApiResponse>('/api/posts', {
-    fallbackData: { data: [] },
-    revalidateOnFocus: false,
-  });
+    const [tags, setTags] = useState<string[]>(initialTags); // Local state for real-time
 
-  const posts = useMemo(() => apiData?.data ?? [], [apiData]);
-  const router = useRouter();               // ✅
-  const searchParams = useSearchParams();   // ✅
-  const activeTag = searchParams.get('tag'); // ✅
+    const { data: apiData } = useSWR<ApiResponse>('/api/posts', {
+        fallbackData: { data: [], topTags: [] },
+        revalidateOnFocus: false,
+        refreshInterval: 0,
+    });
 
+    // Set initial topTags from SWR
+    useEffect(() => {
+        if (apiData?.topTags && apiData.topTags.length > 0) {
+            setTags(apiData.topTags.map((t) => t.name));
+        }
+    }, [apiData?.topTags]);
 
-
-    // 🧮 Calculate trending tags by frequency
-    const trendingTags = useMemo(() => {
-        if (!posts.length) return initialTags;
-
-        const freq: Record<string, number> = {};
-        posts.forEach((p) => {
-            if (p.tag && p.tag.trim() !== '') {
-                freq[p.tag] = (freq[p.tag] || 0) + 1;
-            }
-        });
-
-        return Object.entries(freq)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([tag]) => tag);
-    }, [posts, initialTags]);
-
-    // 🟠 Real-time updates via Pusher
+    // Pusher subscription for real-time tag updates
     useEffect(() => {
         const channel = pusherClient.subscribe('posts-channel');
 
-        channel.bind('new-post', (newPost: PostProps) => {
-            mutate((current) => {
-                const existing = current?.data ?? [];
-                return { data: [newPost, ...existing] };
-            }, { revalidate: false });
+        channel.bind('update-tags', ({ topTags }: { topTags: { name: string; count: number }[] }) => {
+            setTags(topTags.map((t) => t.name)); // Update state instantly
         });
 
         return () => {
-            channel.unbind_all();
+            channel.unbind('update-tags');
             pusherClient.unsubscribe('posts-channel');
         };
-    }, [mutate]);
-
-    // ✅ Tag click updates the URL (triggering Feed revalidation)
-    const handleTagClick = (tag: string) => {
-        const params = new URLSearchParams(searchParams.toString());
-
-        if (activeTag === tag) {
-            params.delete('tag'); // clicking again removes filter
-        } else {
-            params.set('tag', tag);
-        }
-
-        router.push(`/?${params.toString()}`);
-    };
+    }, []);
 
     return (
         <div className="bg-white rounded-2xl shadow-md p-5 sticky top-0 h-screen overflow-y-auto">

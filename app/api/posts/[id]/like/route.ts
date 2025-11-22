@@ -3,58 +3,68 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import { pusherServer } from '@/lib/pusherServer';
+import { Redis } from '@upstash/redis';
 
-export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }  // Awaitable Promise type
+) {
+  await dbConnect();
+
   try {
-    const { action, ghostId } = await request.json();
-    if (!action || !ghostId || !['like', 'unlike'].includes(action)) {
-      return NextResponse.json({ error: 'Invalid action or ghostId' }, { status: 400 });
+    const awaitedParams = await params;  // Await here
+    const { id } = awaitedParams;  // Now safe to destructure
+    const body = await request.json();
+    const { fingerprintHash } = body; // Required from client
+
+    if (!fingerprintHash) {
+      return NextResponse.json({ error: 'Missing fingerprint' }, { status: 400 });
     }
 
-    await dbConnect();
     const post = await Post.findById(id);
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    const index = post.likedBy.indexOf(ghostId);
-    let updatedLikes = post.likes;
-    const updatedLikedBy = [...post.likedBy]; // Fixed: 'const' (never reassigned)
+    // IP extraction
+    const clientIp =
+      request.headers
+        .get('x-forwarded-for')
+        ?.split(',')[0]
+        ?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
 
-    if (action === 'like') {
-      if (index === -1) { // Not liked yet
-        updatedLikes += 1;
-        updatedLikedBy.push(ghostId);
-      }
-    } else { // unlike
-      if (index !== -1) { // Was liked
-        updatedLikes -= 1;
-        updatedLikedBy.splice(index, 1);
-      }
+    // Super-secure key: post + IP + fingerprint hash
+    const limitKey = `like:${id}:${clientIp}:${fingerprintHash}`;
+    const exists = await redis.get(limitKey); // Check if already liked
+
+    if (exists) {
+      return NextResponse.json(
+        { error: 'Already liked this post' },
+        { status: 429 }
+      );
     }
 
-    // Save only if changed
-    const changed = post.likes !== updatedLikes || post.likedBy.length !== updatedLikedBy.length;
-    if (changed) {
-      post.likes = updatedLikes;
-      post.likedBy = updatedLikedBy;
-      await post.save();
-    }
+    // Set key with 1-hour TTL
+    await redis.set(limitKey, 1, { ex: 3600 });
 
-    // Broadcast (matches your Feed's mutate shape)
-    const broadcastData = {
-      _id: post._id.toString(),
-      likes: updatedLikes,
-      likedBy: updatedLikedBy,
-    };
-    await pusherServer.trigger('posts-channel', 'update-like', broadcastData);
+    // Increment
+    post.likes += 1;
+    await post.save();
 
-    // Return partial for client
-    return NextResponse.json({
-      success: true,
-      data: { likes: updatedLikes, likedBy: updatedLikedBy }
+    // Broadcast
+    await pusherServer.trigger('posts-channel', 'update-like', {
+      id: post._id.toString(),
+      likes: post.likes,
     });
+
+    return NextResponse.json({ success: true, data: { id, likes: post.likes } }, { status: 201 });
   } catch (error) {
     console.error('Like error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

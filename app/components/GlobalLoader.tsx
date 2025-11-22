@@ -45,7 +45,7 @@ export default function GlobalLoader() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.8, ease: 'easeOut' }}
                 >
-                    Loading BeHonest...
+                    Let&apos;s BeHonest...
                 </motion.p>
             </motion.div>
         </motion.div>
