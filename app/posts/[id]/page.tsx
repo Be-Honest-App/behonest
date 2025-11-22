@@ -71,25 +71,28 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
     }
 
     return (
-        <article className="max-w-xl mx-auto p-6 bg-white rounded-2xl shadow-md my-8">
-            {/* Post header */}
-            <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-orange-600">{post.tag}</span>
-                <span className="text-xs text-gray-500">{formatRelativeTime(post.time)}</span>
-            </div>
+        <main className="max-w-xl mx-auto p-6 bg-white">
+            <h1 className='flex justify-center items-center bg-orange-500 text-white font-bold px-4 py-3 rounded-lg'>Honest Story</h1>
+            <article className='mx-auto p-6 rounded-2xl shadow-md my-8'>
+                {/* Post header */}
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-orange-600">{post.tag}</span>
+                    <span className="text-xs text-gray-500">{formatRelativeTime(post.time)}</span>
+                </div>
 
-            {/* Post body */}
-            <h1 className="text-gray-800 font-semibold text-xl mb-1">{post.title}</h1>
-            <PostContent content={post.content} />
+                {/* Post body */}
+                <h1 className="text-gray-800 font-semibold text-xl mb-1">{post.title}</h1>
+                <PostContent content={post.content} />
 
-            {/* Actions (client-side for interactivity) */}
-            <PostActions
-                postId={post._id}
-                likes={post.likes}
-                shares={post.shares}
-                likedBy={post.likedBy ?? []}
-                time={post.time}
-            />
-        </article>
+                {/* Actions (client-side for interactivity) */}
+                <PostActions
+                    postId={post._id}
+                    likes={post.likes}
+                    shares={post.shares}
+                    likedBy={post.likedBy ?? []}
+                    time={post.time}
+                />
+            </article>
+        </main>
     );
 }
