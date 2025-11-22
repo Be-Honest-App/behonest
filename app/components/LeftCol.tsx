@@ -221,7 +221,7 @@ export default function LeftCol() {
         // postText.length > 100
         //     ? postText.substring(0, 100) + '...'
         //     : postText || 'Share your best or worst customer service experience on Be Honest!'
-        'Share your best or worst customer service experience on Be Honest!'
+        'Share your best or worst experience on BeHonest.'
     const handlePost = async () => {
         if (!postText.trim() || !category || !country) return // Require all selections
         setIsPosting(true)

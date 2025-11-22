@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/app/components/Navbar';
 import Footer from './components/Footer';
-import ClientLoaderWrapper from './components/ClientLoaderWrapper';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -18,12 +17,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased px-2 md:px-20`}>
-        <Navbar />
-        <main>
-          {/* Loader handled in client wrapper */}
-          <ClientLoaderWrapper>{children}</ClientLoaderWrapper>
-        </main>
-        <Footer />
+        <link rel="icon" href="/BH.ico" sizes="any" />
+        <div className="">
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
