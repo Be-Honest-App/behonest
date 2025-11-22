@@ -81,8 +81,7 @@ export function RightCol({ initialTags }: RightColProps) {
             <div>
                 <strong className="text-gray-800 text-lg">Why Be Honest?</strong>
                 <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-                    Focused on customer service stories first - but supports personal
-                    anonymous links too.
+                    Focused on customer service stories first - but supports personal anonymous stories too.
                 </p>
             </div>
         </div>
