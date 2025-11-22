@@ -72,7 +72,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
 
     return (
         <main className="max-w-xl mx-auto p-6 bg-white">
-            <h1 className='flex justify-center items-center bg-orange-500 text-white font-bold px-4 py-3 rounded-lg'>Honest Story</h1>
+            <h1 className='flex justify-center items-center bg-orange-500 text-white font-extrabold px-4 py-3 rounded-lg text-3xl'>Honest Story</h1>
             <article className='mx-auto p-6 rounded-2xl shadow-md my-8'>
                 {/* Post header */}
                 <div className="flex items-center justify-between mb-2">
