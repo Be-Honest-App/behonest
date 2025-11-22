@@ -6,7 +6,6 @@ import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import PostActions from '@/app/components/PostActions'; // Adjust path
 import  PostContent  from '@/app/components/PostContent'; // From Feed
-import { formatRelativeTime } from '@/app/components/Post/Feed'; // Reuse from Feed
 
 interface PostProps {
     _id: string;
@@ -54,7 +53,6 @@ export default async function PostPage({ params }: { params: { id: string } }) {
             {/* Post header */}
             <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-orange-600">{post.tag}</span>
-                <span className="text-xs text-gray-500">{formatRelativeTime(post.time)}</span>
             </div>
 
             {/* Post body */}
@@ -67,6 +65,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
                 likes={post.likes}
                 shares={post.shares}
                 likedBy={post.likedBy ?? []}
+                time={post.time}
             />
         </article>
     );

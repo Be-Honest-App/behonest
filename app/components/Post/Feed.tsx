@@ -2,11 +2,10 @@
 
 import useSWR from 'swr';
 import { useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation'; // Add useRouter
+import { useSearchParams } from 'next/navigation';
 import { pusherClient } from '@/lib/pusherClient';
 import PostActions from '../PostActions';
-import PostContent from '../PostContent'; // Your imported component
-// import Filters from '../Filters'; // New/updated filter component below
+import PostContent from '../PostContent';
 
 interface PostProps {
     _id: string;
@@ -45,15 +44,11 @@ export function formatRelativeTime(isoString: string): string {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
     });
 }
 
 export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     const searchParams = useSearchParams();
-    // const router = useRouter(); // For URL updates
     const queryString = searchParams.toString();
     const swrKey = queryString ? `/api/posts?${queryString}` : '/api/posts';
 
@@ -64,14 +59,13 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     });
 
     const latestId = useRef(posts?.[0]?._id);
-    const currentTag = searchParams.get('tag'); // Read current tag filter
+    const currentTag = searchParams.get('tag');
 
     // Pusher for real-time (filter new posts client-side if tag active)
     useEffect(() => {
         const channel = pusherClient.subscribe('posts-channel');
 
         channel.bind('new-post', (newPost: PostProps) => {
-            // If no filter or matches current tag, add to top
             if (!currentTag || newPost.tag === currentTag) {
                 mutate((current = []) => [newPost, ...current], { revalidate: false });
             }
@@ -96,22 +90,7 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
             channel.unbind_all();
             pusherClient.unsubscribe('posts-channel');
         };
-    }, [mutate, currentTag]); // Re-sub on tag change
-
-    // const handleFilterChange = (newFilters: { tag?: string; country?: string }) => {
-    //     const params = new URLSearchParams(searchParams.toString());
-    //     if (newFilters.tag) {
-    //         params.set('tag', newFilters.tag);
-    //     } else {
-    //         params.delete('tag');
-    //     }
-    //     if (newFilters.country) {
-    //         params.set('country', newFilters.country);
-    //     } else {
-    //         params.delete('country');
-    //     }
-    //     router.push(`?${params.toString()}`); // Update URL, triggers SWR re-fetch
-    // };
+    }, [mutate, currentTag]);
 
     const hasActiveFilters = searchParams.get('tag') || searchParams.get('country');
 
@@ -120,19 +99,7 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
     }
 
     return (
-        <div className="flex-1 max-w-2xl mx-auto p-4">
-            {/* Header with Filters */}
-            {/* <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Be-Honest Feed</h1>
-                <Filters
-                    industries={['Customer Service', 'Work Life', 'Student Life']} // Hardcoded or from topTags
-                    initialTag={searchParams.get('tag') || ''}
-                    initialCountry={searchParams.get('country') || ''}
-                    onChange={(filters) => handleFilterChange({ tag: filters.tag, country: filters.country })}
-                    onClear={() => handleFilterChange({})} // Clear both
-                />
-            </div> */}
-
+        <div className="flex-1 max-w-2xl mx-auto p-4 bg-orange-500/10 rounded-2xl shadow-sm">
             {/* Feed list */}
             <div className="space-y-5">
                 {posts?.length ? (
@@ -141,9 +108,9 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                             key={post._id}
                             className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 transition hover:shadow-md"
                         >
-                            {/* Post header */}
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center space-x-2">
+                            {/* Post header - Mobile Responsive */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1 sm:gap-2">
+                                <div className="flex flex-wrap items-center space-x-2">
                                     <span className="text-sm font-medium text-orange-600">
                                         {post.tag}
                                     </span>
@@ -151,9 +118,6 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                                         <span className="text-sm font-medium text-orange-600">• {post.businessName}</span>
                                     )}
                                 </div>
-                                <span className="text-xs text-gray-500">
-                                    {formatRelativeTime(post.time)}
-                                </span>
                             </div>
 
                             {/* Post body */}
@@ -165,6 +129,7 @@ export function Feed({ initialPosts }: { initialPosts: PostProps[] }) {
                                 likes={post.likes}
                                 shares={post.shares}
                                 likedBy={post.likedBy ?? []}
+                                time={post.time}
                             />
                         </div>
                     ))

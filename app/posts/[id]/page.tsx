@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/mongodb'; // Your DB connect function
 import Post from '@/models/Post'; // Your Mongoose model
 import PostActions from '@/app/components/PostActions';
-import PostContent from '@/app/components/PostContent'; 
+import PostContent from '@/app/components/PostContent';
 
 interface PostProps {
     _id: string;
@@ -59,9 +59,6 @@ function formatRelativeTime(isoString: string): string {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
     });
 }
 
@@ -91,6 +88,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                 likes={post.likes}
                 shares={post.shares}
                 likedBy={post.likedBy ?? []}
+                time={post.time}
             />
         </article>
     );

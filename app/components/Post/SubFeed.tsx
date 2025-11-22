@@ -4,7 +4,7 @@ import React from 'react'
 export default function SubFeed() {
     return (
         <main>
-            <div className="flex flex-col sticky top-0 ">
+            <div className="flex flex-col sticky top-0 pb-4 md:pb-0 pt-0 md:pt-4">
                 <h2 className="text-lg font-bold text-gray-800 m-0 ">
                     Honest Stories
                 </h2>

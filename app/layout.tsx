@@ -28,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased px-2 md:px-20`}>
+        <link rel="icon" href="/BH.ico" sizes="any" />
         <div className="">
           <Navbar />
           <main>{children}</main>
