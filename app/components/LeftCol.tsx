@@ -285,7 +285,7 @@ export default function LeftCol() {
             <div className="bg-white rounded-2xl shadow-md p-5">
                 <strong className="text-gray-800 text-lg block mb-1">Quick Post</strong>
                 <p className="text-gray-500 text-sm mb-3">
-                    Share a customer service experience in under 2 minutes.
+                    Share your experience in under 2 minutes
                 </p>
 
                 <select
