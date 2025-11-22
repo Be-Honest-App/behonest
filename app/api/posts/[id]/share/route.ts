@@ -40,7 +40,7 @@ import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import { pusherServer } from '@/lib/pusherServer';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     await dbConnect();
 
     try {
