@@ -45,18 +45,18 @@ export default async function PostPage({ params }: PostPageProps) {
     if (!post) notFound();
 
     return (
-        <main className="max-w-xl mx-auto p-6 bg-white">
-            <div className="text-orange-400 hover:text-orange-200 mb-4">
+        <main className="max-w-xl w-full mx-auto p-4 sm:p-6 bg-white">
+            <div className="text-orange-400 hover:text-orange-200 mb-3 sm:mb-4">
                 <BackButton />
             </div>
 
             <div className="flex justify-center items-center mt-4">
-                <h1 className="flex justify-center items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white font-extrabold px-6 py-3 rounded-xl text-2xl shadow-lg">
+                <h1 className="flex justify-center items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white font-extrabold px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-xl sm:text-2xl shadow-lg text-center">
                     Honest Story
                 </h1>
             </div>
 
-            <article className="mx-auto p-6 rounded-3xl shadow-lg bg-gradient-to-br from-white to-orange-50/20 border border-orange-300/30 my-0 -mt-5">
+            <article className="mx-auto p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg bg-gradient-to-br from-white to-orange-50/20 border border-orange-300/30 my-0 -mt-4 sm:-mt-5 w-full">
                 <SplitPost
                     content={post.content}
                     time={post.time}
@@ -67,3 +67,4 @@ export default async function PostPage({ params }: PostPageProps) {
         </main>
     );
 }
+
