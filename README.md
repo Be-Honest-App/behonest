@@ -1,10 +1,10 @@
-# Product Requirements Document (PRD) — Be-Honest
+# Product Requirements Document (PRD) — BeHonest
 
 Last updated: 2025-11-22
 
 Overview
 
-- Be-Honest is a lightweight social feed built with Next.js (App Router), TypeScript, Tailwind CSS and MongoDB. The app enables short 'posts' (shouts) tagged by industry or topic and supports real-time updates via Pusher for likes, shares and new posts.
+- BeHonest is a lightweight social feed built with Next.js (App Router), TypeScript, Tailwind CSS and MongoDB. The app enables short 'posts' (shouts) tagged by industry or topic and supports real-time updates via Pusher for likes, shares and new posts.
 
 Purpose and Objectives
 
@@ -149,10 +149,3 @@ Appendix — Implementation Notes
 
 - Follow the existing code structure: `app/api/posts/*` for endpoints, `lib/*` for infra helpers and `models/Post.ts` for the schema.
 - Docs and component-level markdown exist under `docs/components/`.
-
----
-
-If you want, I can:
-
-- Expand this PRD into individual tickets (Jira/GitHub issues) and estimate effort per ticket.
-- Create a simple roadmap board, or draft API contract OpenAPI schema for the endpoints.

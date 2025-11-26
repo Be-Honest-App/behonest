@@ -10,7 +10,7 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Speak Your Truth, Stay Anonymous | Be Honest',
+  title: 'Speak Your Truth, Stay Anonymous | BeHonest',
   description: 'A safe space to express honestly, share feedback, and collect anonymous responses.',
 };
 

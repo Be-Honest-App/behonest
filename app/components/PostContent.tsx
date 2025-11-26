@@ -1,16 +1,31 @@
-// app/components/PostContent.tsx (New client component for interactivity)
+// app/components/PostContent.tsx
 'use client';
 
 import { useState } from 'react';
 
 interface PostContentProps {
     content: string;
+    full?: boolean;
 }
 
-export default function PostContent({ content }: PostContentProps) {
+export default function PostContent({ content, full = false }: PostContentProps) {
     const [expanded, setExpanded] = useState(false);
     const limit = 150;
     const isLong = content.length > limit;
+
+    if (full) {
+        return (
+            <div className="prose prose-lg max-w-none text-gray-700 mb-8 prose-headings:text-gray-900 prose-p:leading-relaxed prose-blockquote:border-l-4 prose-blockquote:border-orange-300 prose-blockquote:pl-4 prose-blockquote:text-gray-600 prose-ul:ml-6 prose-ol:ml-6 prose-li:mb-1">
+                <div className="text-gray-700 leading-relaxed space-y-4">
+                    {content.split('\n').map((paragraph, index) => (
+                        <p key={index} className="mb-4 last:mb-0">
+                            {paragraph}
+                        </p>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     if (!isLong) {
         return (
