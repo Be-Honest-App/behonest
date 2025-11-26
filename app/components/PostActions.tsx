@@ -27,7 +27,7 @@ export default function PostActions({ postId, likes, shares, time }: PostActions
             return { shareUrl: '', shareText: '' };
         }
         return {
-            shareUrl: `${window.location.origin}/posts/${postId}`,
+            shareUrl: `${window.location.origin}/share/${postId}`,
             shareText: 'Check out this honest customer service story on BeHonest!',
         };
     }, [postId]);

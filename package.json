@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.0.1",
+    "@heroicons/react": "^2.2.0",
     "@sentry/nextjs": "^10.26.0",
     "@upstash/redis": "^1.35.6",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.546.0",
     "mongoose": "^8.19.1",

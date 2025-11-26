@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  title: 'Speak Your Truth, Stay Anonymous | Be Honest',
+  title: 'Speak Your Truth, Stay Anonymous | BeHonest',
   description: 'A safe space to express honestly, share feedback, and collect anonymous responses.',
 }
 
