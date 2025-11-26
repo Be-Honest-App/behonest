@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import PostContent from "./PostContent";
 import clsx from "clsx";
 
@@ -19,8 +19,6 @@ export default function SplitPost({
     businessName,
     chunkSize = 600,
 }: SplitPostProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-
     // Split content into chunks
     const chunks: string[] = [];
     for (let i = 0; i < content.length; i += chunkSize) {
@@ -30,7 +28,6 @@ export default function SplitPost({
     const [currentPage, setCurrentPage] = useState(0);
     const [animate, setAnimate] = useState(false);
 
-    // Fade animation handlers
     const handleNext = useCallback(() => {
         if (currentPage < chunks.length - 1) {
             setAnimate(true);
@@ -51,59 +48,40 @@ export default function SplitPost({
         }
     }, [currentPage]);
 
-    // Swipe support
-    useEffect(() => {
-        const el = containerRef.current;
-        if (!el) return;
-
-        let touchStartY: number | null = null;
-        const threshold = 50;
-
-        const onTouchStart = (e: TouchEvent) => {
-            touchStartY = e.touches[0].clientY;
-        };
-
-        const onTouchEnd = (e: TouchEvent) => {
-            if (touchStartY === null) return;
-            const delta = touchStartY - e.changedTouches[0].clientY;
-            if (delta > threshold) handleNext();
-            if (delta < -threshold) handlePrev();
-            touchStartY = null;
-        };
-
-        el.addEventListener("touchstart", onTouchStart, { passive: true });
-        el.addEventListener("touchend", onTouchEnd, { passive: true });
-
-        return () => {
-            el.removeEventListener("touchstart", onTouchStart);
-            el.removeEventListener("touchend", onTouchEnd);
-        };
-    }, [handleNext, handlePrev]);
-
     return (
-        <div className="relative" ref={containerRef}>
+        <div className="relative w-full max-w-full">
             {/* Header with tag circle and business info */}
-            <div className="flex items-center mb-4 space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-sm">{tag.charAt(0).toUpperCase()}</span>
-                </div>
-                <div className="flex flex-col">
-                    <div className="flex items-center space-x-2 mb-1">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200/50">
+            <div className="flex flex-col sm:flex-row sm:items-center mb-4 sm:space-x-3 space-y-2 sm:space-y-0">
+                <div className="flex flex-row items-center mb-4 space-x-3 flex-wrap">
+                    {/* Tag circle */}
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                        <span className="text-white font-bold text-sm sm:text-base">
+                            {tag.charAt(0).toUpperCase()}
+                        </span>
+                    </div>
+
+                    {/* Tag and business info */}
+                    <div className="flex flex-wrap items-center space-x-2">
+                        <span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200/50">
                             {tag}
                         </span>
-                        {businessName && <span className="text-sm font-medium text-gray-600">• {businessName}</span>}
+                        {businessName && (
+                            <span className="text-xs sm:text-sm font-medium text-gray-600 truncate max-w-xs sm:max-w-sm">
+                                • {businessName}
+                            </span>
+                        )}
                     </div>
                 </div>
+
             </div>
 
             {/* Navigation buttons top-right */}
             {chunks.length > 1 && (
-                <div className="absolute top-0 right-0 flex space-x-2">
+                <div className="absolute top-0 right-0 flex space-x-2 z-10">
                     {currentPage > 0 && (
                         <button
                             onClick={handlePrev}
-                            className="px-3 py-1 text-xs rounded-md bg-orange-200 hover:bg-orange-300 text-orange-800"
+                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md bg-orange-200 hover:bg-orange-300 text-orange-800 whitespace-nowrap"
                         >
                             Previous
                         </button>
@@ -111,12 +89,12 @@ export default function SplitPost({
                     {currentPage < chunks.length - 1 ? (
                         <button
                             onClick={handleNext}
-                            className="px-3 py-1 text-xs rounded-md bg-orange-500 hover:bg-orange-600 text-white"
+                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md bg-orange-500 hover:bg-orange-600 text-white whitespace-nowrap"
                         >
                             Next
                         </button>
                     ) : (
-                        <span className="px-3 py-1 text-xs rounded-md bg-gray-200 text-gray-600 cursor-default">
+                        <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md bg-gray-200 text-gray-600 cursor-default whitespace-nowrap">
                             End of Story
                         </span>
                     )}
@@ -124,21 +102,31 @@ export default function SplitPost({
             )}
 
             {/* Post content */}
-            <div className={clsx("transition-opacity duration-200 ease-in-out mt-6", animate ? "opacity-0" : "opacity-100")}>
+            <div
+                className={clsx(
+                    "transition-opacity duration-200 ease-in-out mt-4 sm:mt-6 break-words",
+                    animate ? "opacity-0" : "opacity-100"
+                )}
+            >
                 <PostContent content={chunks[currentPage]} full />
             </div>
 
             {/* Bottom row: date left, page right */}
-            <div className="flex justify-between mt-4 text-xs text-gray-500">
-                <span>
+            <div className="flex flex-row justify-between mt-4 text-xs sm:text-sm text-gray-500 w-full">
+                <span className="truncate">
                     {new Date(time).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                     })}
                 </span>
-                {chunks.length > 1 && <span>Part {currentPage + 1} of {chunks.length}</span>}
+                {chunks.length > 1 && (
+                    <span className="truncate text-right">
+                        Part {currentPage + 1} of {chunks.length}
+                    </span>
+                )}
             </div>
+
         </div>
     );
 }

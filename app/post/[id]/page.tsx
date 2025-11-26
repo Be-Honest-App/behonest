@@ -64,30 +64,33 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                 </div>
 
                 {/* Post Card */}
-                <article className="mx-auto p-6 rounded-3xl shadow-lg bg-gradient-to-br from-white to-orange-50/20 border border-orange-300/30 my-0 -mt-5">
+                <article className="mx-auto px-2 py-4 md:px-6 md:py-8 rounded-3xl shadow-lg bg-gradient-to-br from-white to-orange-50/20 border border-orange-300/30 my-0 -mt-5">
                     {/* Header */}
-                    <header className="p-6 pb-4 border-b border-gray-100/30">
+                    <header className="p-6 pb-4 border-b border-orange-200">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                            <div className="flex flex-row items-center space-x-3">
+                                {/* Tag circle */}
+                                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
                                     <span className="text-white font-bold text-sm">
                                         {post.tag.charAt(0).toUpperCase()}
                                     </span>
                                 </div>
-                                <div>
-                                    <div className="flex items-center space-x-2 mb-1">
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200/50">
-                                            {post.tag}
+
+                                {/* Tag and business info */}
+                                <div className="flex items-center space-x-2 min-w-0">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200/50 truncate">
+                                        {post.tag}
+                                    </span>
+                                    {post.businessName && (
+                                        <span className="text-sm font-medium text-gray-600 truncate max-w-xs sm:max-w-sm">
+                                            • {post.businessName}
                                         </span>
-                                        {post.businessName && (
-                                            <span className="text-sm font-medium text-gray-600">• {post.businessName}</span>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-gray-500">{new Date(post.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </header>
+
 
                     {/* Content - Full, non-truncated */}
                     <div className="p-6">
@@ -99,19 +102,16 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                         </div>
                     </div>
 
-                    {/* Divider */}
-                    <div className="border-t border-gray-100/30"></div>
-
                     {/* Actions */}
-                   
-                        <PostActions
-                            postId={post._id}
-                            likes={post.likes}
-                            shares={post.shares}
-                            likedBy={post.likedBy ?? []}
-                            time={post.time}
-                        />
-                    
+
+                    <PostActions
+                        postId={post._id}
+                        likes={post.likes}
+                        shares={post.shares}
+                        likedBy={post.likedBy ?? []}
+                        time={post.time}
+                    />
+
                 </article>
             </div>
         </main>
