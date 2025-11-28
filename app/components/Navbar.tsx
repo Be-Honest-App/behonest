@@ -15,7 +15,7 @@ export function Navbar() {
   ]
 
   return (
-    <header className="px-5 pb-2 rounded-xl pt-5 md:sticky md:top-0 z-50 bg-white backdrop-blur-md transition-opacity duration-300 ease-in-out">
+    <header className="px-6 md:px-20 pb-2 rounded-xl pt-5 fixed top-0 left-0 w-full z-50 bg-white backdrop-blur-md transition-opacity duration-300 ease-in-out">
       {/* Header Container */}
       <div className="flex items-center justify-between">
         {/* Logo + Title */}

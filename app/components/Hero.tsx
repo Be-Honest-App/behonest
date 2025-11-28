@@ -4,7 +4,7 @@ import { GradientCard } from '../components/ui/GradientCard'
 
 export function Hero() {
     return (
-        <div className="mx-5 md:mx-20 mt-10" style={{ gridColumn: '1 / -1' }}>
+        <div className="mx-5 md:mx-20 mt-24" style={{ gridColumn: '1 / -1' }}>
             <GradientCard className="text-center py-12 px-6 md:px-12">
                 <h1 className="text-3xl md:text-4xl font-bold mb-3">
                     Speak Your Truth, Stay Anonymous
