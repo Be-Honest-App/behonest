@@ -66,10 +66,11 @@ export function MobileLeftColToggle() {
             </button>
 
 
+        
             {/* Mobile modal */}
             {isOpen && (
-                <div className="fixed inset-0 z-40 bg-black/50 md:hidden flex items-end justify-center p-0">
-                    <div className="bg-white w-full rounded-t-2xl max-h-[90vh] h-[90vh] overflow-y-auto shadow-2xl relative pb-safe">
+                <div className="fixed inset-x-0 top-40 bottom-0 z-40 md:hidden flex items-start justify-center p-0 border border-orange-300/70 ">
+                    <div className="bg-white w-full rounded-t-2xl max-h-[calc(90vh-4rem)] h-[90vh] overflow-y-auto shadow-2xl relative pb-safe">
                         {/* Header */}
                         <div className="p-4 flex justify-between items-center border-b border-gray-200 bg-white sticky top-0 z-30">
                             <div className="bg-gradient-to-r from-orange-500 to-orange-300 text-white font-bold px-4 py-3 rounded-lg">
