@@ -62,8 +62,9 @@ export function MobileLeftColToggle() {
                 className={`fixed bottom-16 right-4 z-50 w-14 h-14 md:w-20 md:h-20 bg-orange-500 text-white rounded-full shadow-lg flex items-center justify-center text-5xl font-bold md:hidden focus:outline-none focus:ring-2 focus:ring-orange-300 transition-all duration-300 ease-in-out ${isOpen ? 'rotate-45' : ''} ${effectiveVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'}`}
                 aria-label={isOpen ? 'Close compose' : 'Open compose'}
             >
-                <span className="pointer-events-none">×</span>
+                <span className="pointer-events-none -mt-2 md:-mt-2">+</span>
             </button>
+
 
             {/* Mobile modal */}
             {isOpen && (
