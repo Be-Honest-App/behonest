@@ -19,7 +19,7 @@ export default function SplitPost({
     businessName,
     chunkSize = 600,
 }: SplitPostProps) {
-    // Split content into chunks
+    // Split content
     const chunks: string[] = [];
     for (let i = 0; i < content.length; i += chunkSize) {
         chunks.push(content.slice(i, i + chunkSize));
@@ -50,34 +50,37 @@ export default function SplitPost({
 
     return (
         <div className="relative w-full max-w-full">
-            {/* Header with tag circle and business info */}
-            <div className="flex flex-col sm:flex-row sm:items-center mb-4 sm:space-x-3 space-y-2 sm:space-y-0">
-                <div className="flex flex-row items-center mb-4 space-x-3 flex-wrap">
-                    {/* Tag circle */}
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                        <span className="text-white font-bold text-sm sm:text-base">
-                            {tag.charAt(0).toUpperCase()}
-                        </span>
-                    </div>
 
-                    {/* Tag and business info */}
-                    <div className="flex flex-wrap items-center space-x-2">
-                        <span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200/50">
-                            {tag}
-                        </span>
-                        {businessName && (
-                            <span className="text-xs sm:text-sm font-medium text-gray-600 truncate max-w-xs sm:max-w-sm">
-                                • {businessName}
-                            </span>
-                        )}
-                    </div>
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-3">
+
+                {/* Circle Icon */}
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                    <span className="text-white font-bold text-sm">
+                        {tag.charAt(0).toUpperCase()}
+                    </span>
                 </div>
 
+                {/* Tag + Business */}
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 min-w-0">
+
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200/50 flex-shrink-0">
+                        {tag}
+                    </span>
+
+                    {businessName && (
+                        <span className="text-sm font-medium text-gray-600 truncate max-w-[200px] sm:max-w-xs">
+                            • {businessName}
+                        </span>
+                    )}
+
+                </div>
             </div>
 
-            {/* Navigation buttons top-right */}
+            {/* Navigation buttons */}
+            {/* Navigation buttons */}
             {chunks.length > 1 && (
-                <div className="absolute top-0 right-0 flex space-x-2 z-10">
+                <div className="flex flex-wrap sm:absolute sm:top-0 sm:right-0 gap-2 mt-2 sm:mt-0 z-10 justify-end">
                     {currentPage > 0 && (
                         <button
                             onClick={handlePrev}
@@ -86,6 +89,7 @@ export default function SplitPost({
                             Previous
                         </button>
                     )}
+
                     {currentPage < chunks.length - 1 ? (
                         <button
                             onClick={handleNext}
@@ -94,14 +98,15 @@ export default function SplitPost({
                             Next
                         </button>
                     ) : (
-                        <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md bg-gray-200 text-gray-600 cursor-default whitespace-nowrap">
+                        <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md bg-gray-200 text-gray-600 whitespace-nowrap cursor-default">
                             End of Story
                         </span>
                     )}
                 </div>
             )}
 
-            {/* Post content */}
+
+            {/* Content */}
             <div
                 className={clsx(
                     "transition-opacity duration-200 ease-in-out mt-4 sm:mt-6 break-words",
@@ -111,17 +116,18 @@ export default function SplitPost({
                 <PostContent content={chunks[currentPage]} full />
             </div>
 
-            {/* Bottom row: date left, page right */}
-            <div className="flex flex-row justify-between mt-4 text-xs sm:text-sm text-gray-500 w-full">
-                <span className="truncate">
+            {/* Footer: time + part */}
+            <div className="flex flex-wrap justify-between mt-4 text-xs sm:text-sm text-gray-500 w-full gap-2">
+                <span className="truncate max-w-[70%]">
                     {new Date(time).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                     })}
                 </span>
+
                 {chunks.length > 1 && (
-                    <span className="truncate text-right">
+                    <span className="truncate text-right max-w-[30%]">
                         Part {currentPage + 1} of {chunks.length}
                     </span>
                 )}

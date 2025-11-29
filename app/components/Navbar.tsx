@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+
 
 export function Navbar() {
   const pathname = usePathname()
@@ -14,18 +14,8 @@ export function Navbar() {
     // { label: 'Contact', href: '/contact' },
   ]
 
-  const letterVariant = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 120, damping: 12 } },
-  } as const // Fixed: 'as const' prevents type widening to 'string'
-
-  const textVariant = {
-    hidden: { y: 10, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { delay: 0.5, duration: 0.6 } },
-  } as const // Fixed: 'as const' for consistency (no spring, but safe)
-
   return (
-    <header className="px-5 pb-2 rounded-xl pt-5 md:sticky md:top-0 z-50 bg-white backdrop-blur-md transition-opacity duration-300 ease-in-out">
+    <header className="px-6 md:px-20 pb-2 rounded-xl pt-5 fixed top-0 left-0 w-full z-50 bg-white backdrop-blur-md transition-opacity duration-300 ease-in-out">
       {/* Header Container */}
       <div className="flex items-center justify-between">
         {/* Logo + Title */}
