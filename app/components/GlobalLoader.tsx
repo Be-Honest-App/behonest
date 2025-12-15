@@ -40,12 +40,14 @@ export default function GlobalLoader() {
 
                 {/* Loading Text */}
                 <motion.p
-                    className="text-gray-500 text-sm"
+                    className="text-gray-500 text-sm text-center"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.8, ease: 'easeOut' }}
                 >
                     Let&apos;s BeHonest...
+
+                    <span className="block text-sm">V0.2.1</span>
                 </motion.p>
             </motion.div>
         </motion.div>
