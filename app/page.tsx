@@ -1,4 +1,4 @@
-// app/page.tsx (updated for category filter in query)
+// app/page.tsx (updated for country filter in query)
 import { Hero } from "./components/Hero";
 import { Feed } from "./components/Post/Feed";
 import SubFeed from "./components/Post/SubFeed";
@@ -14,6 +14,7 @@ export interface PostProps {
   tag: string;
   businessName?: string | null;
   time: string;
+  title: string;
   content: string;
   likes: number;
   shares: number;
@@ -26,6 +27,7 @@ interface RawPost {
   tag: string;
   businessName?: string | null;
   time: string;
+  title: string;
   content: string;
   likes: number;
   shares: number;
@@ -50,17 +52,16 @@ export default async function Home({ searchParams }: HomeProps) {
     const industry = params.industry as string | undefined;
     const country = params.country as string | undefined;  // Changed from search
 
-    if (category) {
-      // Filter tag: e.g., category="Customer Service" matches tags starting with it
-      where.tag = { $regex: `^${category}`, $options: 'i' };
+    if (industry) {
+      where.businessName = { $regex: industry, $options: 'i' };
     }
     if (country) {
-      where.country = country;  // Exact match on country code (assuming Post has 'country' field)
+      where.country = country;  // Exact match on country code
     }
 
     const rawPosts = (await Post.find(where)
       .sort({ createdAt: -1 })
-      // No .limit()—match SWR's unlimited fetch for consistency
+      .limit(10)
       .lean()) as unknown as RawPost[];
 
     const processedPosts: PostProps[] = rawPosts.map((p) => ({
@@ -101,7 +102,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
         {/* 🟩 Feed (full-width on mobile, scrollable) */}
         <section className="flex-1 flex flex-col overflow-y-auto">
-          <div className="pb-10 md:pb-10">
+          <div className="pb-0 md:pb-10">
             <SubFeed />
           </div>
           <div className="overflow-y-auto flex-1 h-[calc(100vh-4rem)] px-2 md:px-0">
@@ -110,7 +111,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </section>
 
         {/* 🟦 Right Column (hidden on mobile, shown on lg+, fixed/sticky) */}
-        <aside className="hidden lg:block lg:w-1/4 lg:order-3 sticky top-0 self-start h-screen overflow-y-auto">
+        <aside className="hidden lg:flex lg:w-1/4 sticky top-0 h-[calc(100vh-4rem)] overflow-y-auto">
           <RightCol
             initialTags={
               initialBusinessNames.length > 0
