@@ -8,7 +8,6 @@ import { MobileLeftColToggle } from "./components/MobileLeftColToggle";
 import dbConnect from "@/lib/mongodb";
 import Post from "../models/Post";
 import { Types } from "mongoose";
-import type { FilterQuery } from 'mongoose';
 
 export interface PostProps {
   _id: string;
@@ -47,9 +46,9 @@ export default async function Home({ searchParams }: HomeProps) {
 
   try {
     // Build dynamic query based on params
-    const where: FilterQuery<typeof Post> = {};
-    const category = params.category as string | undefined;  // Changed from 'industry'
-    const country = params.country as string | undefined;
+    const where: Record<string, any> = {};
+    const industry = params.industry as string | undefined;
+    const country = params.country as string | undefined;  // Changed from search
 
     if (category) {
       // Filter tag: e.g., category="Customer Service" matches tags starting with it
